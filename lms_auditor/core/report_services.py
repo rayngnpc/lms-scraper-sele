@@ -142,7 +142,7 @@ def generate_detailed_course_report(course_data, output_dir, template_dir): # Ad
             "course": course_data,
             "generation_date": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             "app_settings": app_settings, # Make app_settings available to template if needed
-            "author_name": getattr(app_settings, 'REPORT_AUTHOR_NAME', "Phuoc Chau")
+            "author_name": getattr(app_settings, 'REPORT_AUTHOR_NAME', "Ray Nguyen")
         }
         html_content = template.render(context)
         
@@ -173,7 +173,7 @@ def generate_main_index_html(all_courses_summary_data, output_dir, template_dir,
             "courses": all_courses_summary_data, # List of course summary dicts
             "generation_date": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             "total_courses_processed": len(all_courses_summary_data),
-            "author_name": getattr(app_settings, 'REPORT_AUTHOR_NAME', "Phuoc Chau")
+            "author_name": getattr(app_settings, 'REPORT_AUTHOR_NAME', "Ray Nguyen")
         }
         html_content = template.render(context)
         with open(index_filepath, 'w', encoding='utf-8') as f:
