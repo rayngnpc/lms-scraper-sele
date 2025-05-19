@@ -97,57 +97,12 @@ Learning Management Systems (LMS) at institutions like University often contain 
     pip install -r requirements.txt
     ```
 
-3.  **Run The Script:**
+4.  **Run The Script:**
     ```bash
     python main.py
     ```
     *(You will need to add libraries for document parsing like `python-docx`, `pypdf2` or `pdfminer.six`, `openpyxl`, etc. to your `requirements.txt` depending on the file types you need to analyze).*
-5.  🍪 LMS Session Cookie Acquisition (Manual Step)
-To allow the script to interact with the LMS as an authenticated user, you'll need to manually obtain active session cookies. Follow these steps carefully using your web browser's developer tools:
 
-*   Step 1: Navigate and Open Developer Tools
-Open your web browser (e.g., Chrome, Firefox).
-Go to the University LMS login page (e.g., https://uni-lms.example.com).
-Right-click anywhere on the login page and select "Inspect" or "Inspect Element" to open the browser's developer tools.
-
-*   Step 2: Prepare the Network Tab
-In the developer tools panel, click on the "Network" tab.
-(Optional but Recommended) Look for an option like "Preserve log" or "Persist Logs" and ensure it is checked. This prevents requests from being cleared when you navigate during login.
-
-*   Step 3: Log In to the LMS
-Back on the LMS login page (not in the developer tools), enter your LMS username and password.
-Click the login button to sign in.
-
-*   Step 4: Find a Relevant Network Request
-After you've successfully logged in and the LMS dashboard or a course page loads, look at the list of requests that appear in the "Network" tab.
-You need to select a request that was made after you successfully logged in. Good candidates are:
-The main page document itself (e.g., dashboard, index.php).
-An XHR (sometimes labeled Fetch/XHR) or .json request (e.g., ajax.php, user_data.json).
-Click on one of these requests in the list to view its details.
-
-*   Step 5: Locate and Copy the Cookie String
-In the details pane for the selected request, find the section containing request headers. This might be under a tab named "Headers".
-Scroll down to the "Request Headers" sub-section.
-Look for a header named Cookie:.
-Select and copy the entire string value next to Cookie:. This string contains all your session cookies.
-It should look like this (your values will be different):
-MoodleSession=a1b2c3d4e5f6; SESSIONID=zyxwvuts; _ga=GA1.2.abcdef.12345; user_preference=xyz
-Use code with caution.
-Avoid copying individual cookie lines from a "Cookies" sub-tab if it presents them in a table format. The single Cookie: string from the Request Headers is what you need.
-
-*   Step 6: Save Cookies to raw_cookies.txt
-In the root directory of your cloned project (e.g., LMS-Auditor/), access text file named raw_cookies.txt.
-Paste the entire copied cookie string into this raw_cookies.txt file.
-Use code with caution.
-
-
-❗ Step 7: Secure Your Cookies File (VERY IMPORTANT)
-The raw_cookies.txt file contains sensitive session information. To prevent accidentally committing it to Git:
-Open the .gitignore file in your project's root directory.
-Add the following line if it's not already there:
-raw_cookies.txt
-Use code with caution.
-Gitignore
 Save the .gitignore file.
 
 ---
