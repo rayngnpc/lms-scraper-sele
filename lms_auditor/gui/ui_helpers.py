@@ -123,9 +123,6 @@ def apply_ttk_styles(log_q=None): # Optional log_q parameter
               # Border color on focus can be tricky with ttk themes
               # relief=[('focus', tk.SOLID), ('!focus', tk.FLAT)] # Subtle relief change might work
              )
-    # For a more pronounced border on TEntry focus, you might need a wrapper tk.Frame
-    # or rely on the theme's default focus indication.
-
     style.configure("TCheckbutton",
                     background=COLOR_FRAME_BG,
                     foreground=COLOR_LABEL_TEXT_DARK, # Text next to checkbutton
@@ -150,9 +147,6 @@ def apply_ttk_styles(log_q=None): # Optional log_q parameter
                     arrowcolor=COLOR_BUTTON_TEXT)      # Color of arrows (if visible)
     style.map("Vertical.TScrollbar",
               background=[('active', COLOR_BUTTON_ACTIVE)])
-    # ... (rest of your apply_ttk_styles, ensure FONT_GENERAL, etc. are accessible or passed)
-    # No changes needed inside the style configurations themselves if colors/fonts are global here.
-
 def browse_webdriver_path(entry_var): # Takes the StringVar as an argument
     filename = filedialog.askopenfilename(title="Select WebDriver")
     if filename and entry_var: entry_var.set(filename)
