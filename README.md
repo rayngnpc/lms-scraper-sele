@@ -50,7 +50,7 @@ Learning Management Systems (LMS) at institutions like University often contain 
 **General Features:**
 
 *   **Organized Output:** Saves downloaded materials, reports, and logs in a structured directory format.
-*   **Configurable:** Easily set up LMS credentials, target courses, download paths, API keys, and reporting preferences via a `config.yaml` file.
+*   **Configurable:** Easily set up LMS credentials, target courses, download paths, API keys, and reporting preferences.
 *   **Respectful Scraping:** Implements configurable delays between requests to avoid overloading the LMS or external servers.
 
 ---
