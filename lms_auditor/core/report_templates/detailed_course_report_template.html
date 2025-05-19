@@ -1,0 +1,318 @@
+{% extends "base_report_layout.html" %}
+
+{% block title %}Course Report: {{ course.course_name }}{% endblock %}
+
+{% block report_title %}Course Analysis: {{ course.course_name }}{% endblock %}
+{% block report_subtitle %}
+    <a href="{{ course.course_url }}" target="_blank">{{ course.course_url }}</a> |
+    Pages Crawled: {{ course.pages_crawled_in_course }}
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <style>
+        .security-source-entry { margin-bottom: 0.3rem; border-left: 2px solid #444; padding-left: 5px;}
+        .security-source-entry:last-child { margin-bottom: 0; }
+    </style>
+
+       /* Custom column widths */
+       .table th.col-url, .table td.col-url { width: 25%; } /* More space for URL */
+       .table th.col-linktype, .table td.col-linktype { width: 8%; }
+       .table th.col-linktext, .table td.col-linktext { width: 15%; }
+       .table th.col-foundon, .table td.col-foundon { width: 10%; } /* Less space */
+       .table th.col-paywall, .table td.col-paywall { width: 5%; } /* Less space */
+       .table th.col-apa7, .table td.col-apa7 { width: 25%; } /* More space for APA7 */
+       .table th.col-vt, .table td.col-vt,
+       .table th.col-md, .table td.col-md,
+       .table th.col-gsb, .table td.col-gsb { width: 4%; text-align: center; } /* Equal space for security columns */
+       .table td.col-vt, .table td.col-md, .table td.col-gsb { text-align: center; }
+
+{% endblock %}
+
+{% block content %}
+    <section id="external-references">
+        <h2 class="section-title">External References & Links</h2>
+        {% if course.external_links %}
+            <p>The following external links were found within this course.</p>
+            <table id="externalLinksTable" class="table table-striped table-hover table-bordered caption-top">
+                <caption>List of external links found in course materials.</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th rowspan="2" class="col-url">Discovered URL</th>
+                        <th rowspan="2" class="col-linktype">Link Type</th>
+                        <th rowspan="2" class="col-linktext">Link Text</th>
+                        <th rowspan="2" class="col-foundon">Found On</th>
+                        <th rowspan="2" class="col-paywall">Paywall <i class="fas fa-info-circle tooltip-icon" title="Indicates if the link might lead to a paywalled site."></i></th>
+                        <th rowspan="2" class="col-apa7">APA7 Reference</th>
+                        <th colspan="3" class="text-center">Security <i class="fas fa-info-circle tooltip-icon" title="Results from various security scanning services."></i></th>
+                    </tr>
+                    <tr>
+                        <th class="col-vt">Virustotal</th>
+                        <th class="col-md">Metadefender</th>
+                        <th class="col-gsb">Google Safe Browser</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <tbody>
+                {% for link in course.external_links %}
+                    <tr>
+                        <td class="col-url"><a href="{{ link.url }}" target="_blank" title="{{ link.url }}">{{ link.url | truncate(80) }}</a></td>
+                        <td class="col-linktype">{{ link.type }}</td>
+                        <td class="col-linktext">{{ link.text | truncate(60) }}</td>
+                        <td class="col-foundon"><a href="{{ link.source_page_url }}" target="_blank" title="{{ link.source_page_url }}">{{ link.source_page_url | url_basename | truncate(40) }}</a></td>
+                        <td class="col-paywall {{ 'paywall-true' if link.is_paywall else 'paywall-false' }}">
+                            {{ 'Yes' if link.is_paywall else 'No' }}
+                        </td>
+                        <td class="col-apa7"><div class="citation">{{ link.reference_citation | safe }}</div></td>
+                        {# Display results for each scanner #}
+                        <td class="col-vt">
+                            {% set vt_result = link.security_results | selectattr('source', 'equalto', 'VirusTotal') | first %}
+                            {% if vt_result %}
+                                {# Determine display text and badge color for VT based on result #}
+                                {% set positives = vt_result.get('positives', 0) | int %}
+                                {% set current_status_lower = vt_result.get('status', '').lower() %}
+                                {% set display_text = 'No Database' %}
+                                {% set badge_color = 'secondary' %}
+
+                                {% if 'clean' in current_status_lower or 'likely safe' in current_status_lower %}
+                                    {% set display_text = 'Likely Safe' %}
+                                    {% set badge_color = 'success' %}
+                                {% elif 'malicious' in current_status_lower or positives > 0 %}
+                                    {% set display_text = 'Bad' %}
+                                    {% set badge_color = 'danger' %}
+                                {% endif %}
+
+                                <span class="badge rounded-pill bg-{{ badge_color }}">
+                                    {{ display_text }}
+                                    {% if positives > 0 and 'malicious' not in current_status_lower %}
+                                         ({{ positives }})
+                                    {% endif %}
+                                    {% if vt_result.details_link and vt_result.details_link != '#' %}
+                                        <a href="{{ vt_result.details_link }}" target="_blank" title="View details from VirusTotal" class="text-light ms-1"><i class="fas fa-external-link-alt"></i></a>
+                                    {% endif %}
+                                </span>
+                            {% else %}
+                                {# No VT result found, check if enabled #}
+                                {% if app_settings.ENABLE_VIRUSTOTAL_SCAN %}
+                                    <span class="badge bg-secondary">No Database</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Not Enabled</span>
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                        <td class="col-md">
+                            {% set md_result = link.security_results | selectattr('source', 'equalto', 'MetaDefender') | first %}
+                            {% if md_result %}
+                                {# Determine display text and badge color for MD based on result #}
+                                {% set positives = md_result.get('positives', 0) | int %}
+                                {% set current_status_lower = md_result.get('status', '').lower() %}
+                                {% set display_text = 'No Database' %}
+                                {% set badge_color = 'secondary' %}
+
+                                {% if 'clean' in current_status_lower or 'likely safe' in current_status_lower %}
+                                    {% set display_text = 'Likely Safe' %}
+                                    {% set badge_color = 'success' %}
+                                {% elif 'malicious' in current_status_lower or 'flagged' in current_status_lower or positives > 0 %}
+                                    {% set display_text = 'Bad' %}
+                                    {% set badge_color = 'danger' %}
+                                {% endif %}
+
+                                <span class="badge rounded-pill bg-{{ badge_color }}">
+                                    {{ display_text }}
+                                     {% if positives > 0 and 'malicious' not in current_status_lower and 'flagged' not in current_status_lower %}
+                                         ({{ positives }})
+                                    {% endif %}
+                                    {% if md_result.details_link and md_result.details_link != '#' %}
+                                        <a href="{{ md_result.details_link }}" target="_blank" title="View details from MetaDefender" class="text-light ms-1"><i class="fas fa-external-link-alt"></i></a>
+                                    {% endif %}
+                                </span>
+                            {% else %}
+                                {# No MD result found, check if enabled #}
+                                {% if app_settings.ENABLE_METADEFENDER_SCAN %}
+                                    <span class="badge bg-secondary">No Database</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Not Enabled</span>
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                        <td class="col-gsb">
+                            {% set gsb_result = link.security_results | selectattr('source', 'equalto', 'Google Safe Browsing') | first %}
+                            {% if gsb_result %}
+                                {# Determine display text and badge color for GSB based on result #}
+                                {% set current_status_lower = gsb_result.get('status', '').lower() %}
+                                {% set display_text = 'No Database' %}
+                                {% set badge_color = 'secondary' %}
+
+                                {% if 'clean' in current_status_lower or 'likely safe' in current_status_lower %}
+                                    {% set display_text = 'Likely Safe' %}
+                                    {% set badge_color = 'success' %}
+                                {% elif 'malicious' in current_status_lower or 'flagged' in current_status_lower %}
+                                    {% set display_text = 'Bad' %}
+                                    {% set badge_color = 'danger' %}
+                                {% endif %}
+
+                                <span class="badge rounded-pill bg-{{ badge_color }}">
+                                    {{ display_text }}
+                                    {% if gsb_result.details_link and gsb_result.details_link != '#' %}
+                                        <a href="{{ gsb_result.details_link }}" target="_blank" title="View details from Google Safe Browsing" class="text-light ms-1"><i class="fas fa-external-link-alt"></i></a>
+                                    {% endif %}
+                                </span>
+                            {% else %}
+                                {# No GSB result found, check if enabled #}
+                                {% if app_settings.ENABLE_GOOGLE_SAFE_BROWSING_SCAN %}
+                                    <span class="badge bg-secondary">No Database</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Not Enabled</span>
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="alert alert-info" role="alert">
+                No external links found or processed for this course.
+            </div>
+        {% endif %}
+    </section>
+
+    <section id="downloaded-materials" class="mt-5">
+        {# ... This section should be okay as material.scan_result is still a single dict ... #}
+        <h2 class="section-title">Downloaded Materials</h2>
+        {% if course.downloaded_materials %}
+            <p>The following files were downloaded during the audit.</p>
+            <table id="downloadedFilesTable" class="table table-striped table-hover table-bordered caption-top">
+                 <caption>List of files downloaded from the course.</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th>Filename</th>
+                        <th>Original URL</th>
+                        <th>Found On</th>
+                        <th>Status</th>
+                        <th>Local AV Scan <i class="fas fa-info-circle tooltip-icon" title="ClamAV scan result if enabled."></i></th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for material in course.downloaded_materials %}
+                    <tr class="{{ 'table-danger' if material.scan_result and material.scan_result.get('infected') else ('table-warning' if not material.get('success') else '') }}">
+                        <td>{{ material.filename | truncate(70) }}</td>
+                        <td><a href="{{ material.original_url }}" target="_blank" title="{{ material.original_url }}">{{ material.original_url | truncate(80) }}</a></td>
+                        <td><a href="{{ material.source_page_url }}" target="_blank" title="{{ material.source_page_url }}">{{ material.source_page_url | url_basename | truncate(40) }}</a></td>
+                        <td>
+                            {% if material.get('success') %}
+                                <span class="badge bg-success">Downloaded</span>
+                            {% else %}
+                                <span class="badge bg-danger">Failed</span>: {{ material.get('status_message', 'Unknown error') }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if material.scan_result %}
+                                {% if material.scan_result.get('infected') %}
+                                    <span class="badge bg-danger">INFECTED</span> {{ material.scan_result.get('details', '') | truncate(50) }}
+                                {% elif material.scan_result.get('status') == 'Clean' %}
+                                    <span class="badge bg-success">Clean</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ material.scan_result.get('status', 'Unknown') }}</span>
+                                {% endif %}
+                            {% elif app_settings.ENABLE_LOCAL_FILE_SCANS %}
+                                <span class="badge bg-light text-dark">Not Scanned/Error</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Disabled</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="alert alert-info" role="alert">
+                No materials downloaded for this course.
+            </div>
+        {% endif %}
+    </section>
+
+    <section id="security-summary" class="mt-5">
+        <h2 class="section-title">Security Analysis Summary (Unique URLs)</h2>
+        {% if course.security_analysis %}
+             <table id="securityAnalysisTable" class="table table-sm table-hover table-bordered caption-top">
+                <caption>Summary of security scan findings for unique external URLs in this course.</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th>URL Scanned</th>
+                        <th>Overall Status (Prioritized)</th>
+                        <th>Sources Checked</th>
+                        <th>Detailed Reports</th>
+                        <th>Total Reported Positives / Scans</th> {# Combined Positives/Scans #}
+                        <th>Raw Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in course.security_analysis %} {# item here is the dict we built in auditor.py #}
+                    {# Determine risk class for the row based on item.overall_status #}
+                    {% set overall_status_lower = item.overall_status.lower() %}
+                    {% set risk_class_summary = 'risk-unknown' %}
+                    {% if 'error' in overall_status_lower and 'skipped' not in overall_status_lower %}
+                        {% set risk_class_summary = 'risk-error' %}
+                    {% elif 'malicious' in overall_status_lower or 'flagged' in overall_status_lower %}
+                        {% set risk_class_summary = 'risk-high' %}
+                    {% elif 'clean' in overall_status_lower or 'likely safe' in overall_status_lower %}
+                        {% set risk_class_summary = 'risk-low' %}
+                    {% elif item.total_reported_positives > 0 %}
+                         {% set risk_class_summary = 'risk-medium' %}
+                    {% elif 'skipped' in overall_status_lower or 'disabled' in overall_status_lower %}
+                        {% set risk_class_summary = 'risk-skipped' %}
+                    {% endif %}
+                    <tr class="{{ risk_class_summary }}">
+                        <td><a href="{{ item.url }}" target="_blank" title="{{ item.url }}">{{ item.url | truncate(80) }}</a></td>
+                        <td>{{ item.overall_status }}</td>
+                        <td>{{ item.sources_checked }}</td>
+                        <td>{{ item.details_links_html | safe }}</td>
+                        <td>{{ item.total_reported_positives }} / {{item.total_reported_scans if item.total_reported_scans > 0 else 'N/A' }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-sec-{{ loop.index0 }}" aria-expanded="false" aria-controls="collapse-sec-{{ loop.index0 }}">
+                                View
+                            </button>
+                            <div class="collapse mt-1" id="collapse-sec-{{ loop.index0 }}">
+                                <pre style="font-size: 0.70em; max-height: 150px; overflow-y: auto; background-color: var(--bs-tertiary-bg); padding: 5px; border-radius: 3px;">{{ item.raw_results_list | tojson(indent=2) }}</pre>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="alert alert-info">No comprehensive security analysis data available for this course.</div>
+        {% endif %}
+    </section>
+
+{% endblock %}
+
+{% block extra_js %}
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#externalLinksTable').DataTable({
+                "pageLength": 10,
+                "lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
+                "order": [] // Default no initial sorting
+            });
+            $('#downloadedFilesTable').DataTable({
+                "pageLength": 10,
+                "lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ]
+            });
+            $('#securityAnalysisTable').DataTable({
+                "pageLength": 10,
+                "lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
+                "order": [] // Default no initial sorting
+            });
+
+            // Initialize Bootstrap tooltips for FontAwesome icons with title attribute
+            $('.tooltip-icon').each(function () {
+                 new bootstrap.Tooltip(this);
+            });
+        });
+    </script>
+{% endblock %}

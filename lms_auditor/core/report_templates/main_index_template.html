@@ -1,0 +1,67 @@
+{% extends "base_report_layout.html" %} {# Assuming you want the same base look #}
+
+{% block title %}LMS Audit Run Summary - {{ run_id }}{% endblock %}
+
+{% block report_title %}LMS Audit Run Summary{% endblock %}
+
+{% block report_subtitle %}
+    Run ID: {{ run_id }} | Total Courses Processed: {{ total_courses_processed }}
+{% endblock %}
+
+{% block extra_css %}
+    <!-- DataTables CSS (if you decide to use it for this table too) -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+{% endblock %}
+
+{% block content %}
+    <section id="course-summary-list">
+        <h2 class="section-title">Processed Courses</h2>
+        {% if courses %}
+            <table id="coursesSummaryTable" class="table table-striped table-hover table-bordered caption-top">
+                <caption>Summary of audited courses. Click 'View Report' for details.</caption>
+                <thead class="table-light">
+                    <tr>
+                        <th>Course Name</th>
+                        <th>LMS URL</th>
+                        <th>Pages Crawled</th>
+                        <th>External Links</th>
+                        <th>Files Downloaded</th>
+                        <th>Detailed Report</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for course in courses %}
+                    <tr>
+                        <td>{{ course.name }}</td>
+                        <td><a href="{{ course.url }}" target="_blank" title="{{ course.url }}">{{ course.url | truncate(60) }}</a></td>
+                        <td>{{ course.pages_crawled }}</td>
+                        <td>{{ course.external_links_count }}</td>
+                        <td>{{ course.downloads_count }}</td>
+                        <td><a href="{{ course.report_path }}" class="btn btn-sm btn-outline-primary">View Report <i class="fas fa-arrow-right"></i></a></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="alert alert-info" role="alert">
+                No courses were processed or data is unavailable for this run.
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}
+
+{% block extra_js %}
+    <!-- jQuery (required for DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#coursesSummaryTable').DataTable({
+                "pageLength": 10,
+                "lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ]
+            });
+        });
+    </script>
+{% endblock %}
