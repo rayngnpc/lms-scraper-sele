@@ -81,8 +81,8 @@ Learning Management Systems (LMS) at institutions like University often contain 
 
 1.  **Clone the Repository:**
     ```bash
-    git clone https://github.com/rayngnpc/lms-scraper-cookies.git
-    cd lms-scraper-cookies
+    git clone https://github.com/rayngnpc/lms-scraper-sele.git
+    cd lms-scraper-sele
     ```
 
 2.  **Create and Activate a Virtual Environment:**
@@ -96,8 +96,13 @@ Learning Management Systems (LMS) at institutions like University often contain 
     ```bash
     pip install -r requirements.txt
     ```
+
+3.  **Run The Script:**
+    ```bash
+    python main.py
+    ```
     *(You will need to add libraries for document parsing like `python-docx`, `pypdf2` or `pdfminer.six`, `openpyxl`, etc. to your `requirements.txt` depending on the file types you need to analyze).*
-4.  🍪 LMS Session Cookie Acquisition (Manual Step)
+5.  🍪 LMS Session Cookie Acquisition (Manual Step)
 To allow the script to interact with the LMS as an authenticated user, you'll need to manually obtain active session cookies. Follow these steps carefully using your web browser's developer tools:
 
 *   Step 1: Navigate and Open Developer Tools
