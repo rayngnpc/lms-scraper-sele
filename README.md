@@ -103,7 +103,6 @@ Learning Management Systems (LMS) at institutions like University often contain 
     ```
     *(You will need to add libraries for document parsing like `python-docx`, `pypdf2` or `pdfminer.six`, `openpyxl`, etc. to your `requirements.txt` depending on the file types you need to analyze).*
 
-Save the .gitignore file.
 
 ---
 
