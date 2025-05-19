@@ -22,7 +22,7 @@ def show_info_message(title, message):
 class LMSAuditorApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("LMS Content Auditor v1.0.0 - GUI - Phuoc Chau") # Version bump
+        self.root.title("LMS Content Auditor v1.0.0 - GUI - Ray Nguyen") # Version bump
         self.root.geometry("850x750")
         self.root.minsize(700, 600)
 
@@ -65,7 +65,7 @@ class LMSAuditorApp:
         config_labelframe = ttk.LabelFrame(self.root, text="Auditor Configuration", padding=(10, 10))
         config_labelframe.pack(padx=10, pady=(10,5), fill="x", side=tk.TOP, anchor="n")
 
-        author_name_text = "Author: Nguyen Phuoc Chau"
+        author_name_text = "Author: Ray Nguyen"
         author_font_tuple = (ui_helpers.FONT_GENERAL_FAMILY, 8, "italic")
         author_display_label = ttk.Label(config_labelframe, text=author_name_text, font=author_font_tuple, style="TLabel")
         author_display_label.place(relx=1.0, x=-12, rely=0.0, y=-14, anchor="ne")
