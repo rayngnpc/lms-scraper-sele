@@ -175,13 +175,6 @@ def check_and_update_clamav_databases(log_q, var_ls_ref, finalize_callback_succe
         # For now, assuming scan_file_locally in scanner_control uses its own log_queue or prints
         test_scan_result = scan_file_locally(dummy_file_path, force_scan_for_test=True) # scanner_control.log_queue used here
         if log_q: log_q.put(f"INFO_CLAMAV_GUI: Initial test scan result: {test_scan_result}\n")
-
-        # ... (rest of the logic from original app_gui.py's check_and_update_clamav_databases)
-        # ... ensure all calls to attempt_automatic_clamav_config_fix and run_elevated_windows_executable
-        # ... (for freshclam) pass the log_q.
-        # ... Ensure scan_file_locally is called correctly.
-        # ... Replace direct var_enable_local_scan.set() with calls to finalize_callback_success/failure.
-
         needs_db_update_explicitly = test_scan_result.get("needs_freshclam", False)
         is_test_scan_ok = test_scan_result.get("status") == "Clean"
         is_test_scan_critically_failed = test_scan_result.get("status") in [
