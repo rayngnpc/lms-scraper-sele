@@ -282,9 +282,6 @@ def handle_clamav_post_download(root_window, log_q, var_ls_ref, download_success
                                          # and should be managed carefully.
 
     def _finalize_toggle_after_all_setup(new_state_bool):
-        # This function is the single point of truth for setting the checkbox state
-        # and resetting the is_handling_local_scan_toggle flag.
-        # It will be passed to check_and_update_clamav_databases.
         current_checkbox_state = var_ls_ref.get()
         if current_checkbox_state != new_state_bool:
             if log_q: log_q.put(f"DEBUG_CLAMAV_GUI: Setting local scan checkbox from {current_checkbox_state} to {new_state_bool}.\n")
