@@ -39,11 +39,6 @@ class LMSAuditorApp:
         self._setup_variables()
         self._create_widgets()
         self._initial_ui_state()
-
-        # Pass log_queue to other modules if they have a setter (more advanced)
-        # For now, functions in other modules will take log_queue as a parameter if needed.
-        # e.g., core.lms_handler.log_queue = self.log_queue (if lms_handler had such a global)
-
         self.root.after(100, self.update_log_area)
 
     def _setup_variables(self):
@@ -291,8 +286,6 @@ class LMSAuditorApp:
         self.reset_ui_for_new_or_finished_audit(is_finished_run=False) # Initial setup state
 
     def handle_local_scan_toggle_proxy(self, *args):
-        # This proxy calls the actual handler in clamav_gui_manager
-        # It passes necessary references: root window, log_queue, and the BooleanVar
         clamav_gui_manager.handle_local_scan_toggle(
             self.root,
             self.log_queue,
